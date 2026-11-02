@@ -43,7 +43,7 @@ PAGE = """<!doctype html>
 *{box-sizing:border-box}body{margin:0;font:14px/1.45 system-ui,Segoe UI,Roboto,sans-serif;color:var(--text);background:var(--sunken)}
 .top{background:var(--brand);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px}
 .top img{width:28px;height:28px}.top h1{font-size:16px;margin:0;font-weight:700}.top .v{margin-left:auto;font-size:12px;opacity:.8}
-.wrap{max-width:760px;margin:0 auto;padding:16px}
+.wrap{max-width:760px;margin:0 auto;padding:24px 16px 8px}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:16px;box-shadow:0 1px 2px rgba(15,23,42,.04)}
 .card h2{font-size:14px;margin:0 0 8px;font-weight:700}.card p{margin:0 0 8px;color:var(--muted-strong);font-size:12px}
 label{display:block;font-size:11px;font-weight:600;color:var(--muted-strong);margin:8px 0 4px}
@@ -63,9 +63,8 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{text-align:left;padd
 td{padding:6px 8px;border-bottom:1px solid var(--border)}tr:last-child td{border-bottom:0}.muted{color:var(--muted)}
 .kv{display:grid;grid-template-columns:140px 1fr;gap:4px 12px;font-size:12px}.kv b{color:var(--muted-strong);font-weight:600}
 .steps{margin:0 0 8px;padding-left:18px;font-size:12px;color:var(--muted-strong)}.steps li{margin:3px 0}
-.foot{color:var(--muted);font-size:11px;text-align:center;padding:8px}
+.foot{color:var(--muted);font-size:11px;text-align:center;padding:8px;line-height:1.7}.foot b{color:var(--muted-strong)}
 </style></head><body>
-<div class="top"><img src="/icon.png" alt=""><h1>Rapid Print Agent</h1><span class="v">v__VERSION__ · this computer: <b id="host"></b></span></div>
 <div class="wrap">
 
 <div class="card" id="pairCard" style="display:none">
@@ -121,7 +120,7 @@ td{padding:6px 8px;border-bottom:1px solid var(--border)}tr:last-child td{border
     <p id="noRecent" class="muted" style="margin-top:8px">Nothing printed yet.</p>
   </div>
 </div>
-<p class="foot">Rapid Print Agent keeps running in the system tray. Closing this window only hides it; the tray icon brings it back.</p>
+<p class="foot">Rapid Print Agent v__VERSION__ · this computer: <b id="host"></b><br>Keeps running in the system tray. Closing this window only hides it; the tray icon brings it back.</p>
 </div>
 <script>
 const $=s=>document.querySelector(s);const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
