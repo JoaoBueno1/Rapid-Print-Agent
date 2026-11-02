@@ -76,3 +76,16 @@ Bump `rapid_print_agent/__init__.py`, run `build\build.ps1`, upload
 `PRINT_AGENT_LATEST_VERSION`, `PRINT_AGENT_SHA256` and `PRINT_AGENT_DOWNLOAD_URL`
 (direct `.exe` link). Agents check every 6 h, verify the hash and swap themselves.
 Unsigned: SmartScreen warns on first run. A code-signing certificate removes that.
+
+## Publicar uma versão
+
+1. Subir `__version__` em `rapid_print_agent/__init__.py`.
+2. `.\build\build.ps1` gera `dist\RapidPrintAgent.exe`.
+3. `.\build\publish.ps1 -Version X.Y.Z` manda o exe para o branch `releases`
+   (só exe + `SHA256SUMS` + `version.json`; o histórico desse branch pode ser
+   reescrito sem dó).
+4. Link de download, usado pelo botão da página Printers do TMS:
+   `https://github.com/JoaoBueno1/Rapid-Print-Agent/raw/releases/RapidPrintAgent.exe`
+5. Para os agentes instalados se atualizarem sozinhos, no TMS:
+   `PRINT_AGENT_LATEST_VERSION=X.Y.Z` e `PRINT_AGENT_SHA256=<sha>`, com
+   `PRINT_AGENT_DOWNLOAD_URL` apontando para o exe.
