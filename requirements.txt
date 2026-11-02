@@ -1,0 +1,5 @@
+requests==2.32.3
+pywin32==311
+pypdfium2==5.7.0
+pillow==11.2.1
+pystray==0.19.5
