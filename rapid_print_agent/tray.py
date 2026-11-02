@@ -36,6 +36,43 @@ def _variant(state: str) -> Image.Image:
     return img
 
 
+def promote_tray_icon(delay: float = 4.0):
+    """Windows 11 hides a new app's tray icon behind the ^ overflow until the
+    user drags it out. Dispatchers will not do that, so promote ours once the
+    shell has registered it (the key only exists after the icon is shown)."""
+    import time
+    time.sleep(delay)
+    if not getattr(sys, "frozen", False):
+        return
+    try:
+        import winreg
+        exe = sys.executable.lower()
+        root = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Control Panel\NotifyIconSettings")
+        i = 0
+        while True:
+            try:
+                name = winreg.EnumKey(root, i)
+            except OSError:
+                break
+            i += 1
+            try:
+                with winreg.OpenKey(root, name, 0, winreg.KEY_READ | winreg.KEY_SET_VALUE) as k:
+                    path, _ = winreg.QueryValueEx(k, "ExecutablePath")
+                    if str(path).lower() != exe:
+                        continue
+                    try:
+                        promoted, _ = winreg.QueryValueEx(k, "IsPromoted")
+                    except OSError:
+                        promoted = None
+                    if promoted != 1:
+                        winreg.SetValueEx(k, "IsPromoted", 0, winreg.REG_DWORD, 1)
+                        log.info("tray icon promoted to the visible area")
+            except OSError:
+                continue
+    except Exception:  # noqa: BLE001
+        log.debug("tray promote skipped", exc_info=True)
+
+
 class Tray:
     def __init__(self, config, worker, ui, on_quit):
         self.config = config
@@ -49,7 +86,7 @@ class Tray:
         import pystray
         return pystray.Menu(
             pystray.MenuItem(f"{APP_NAME} v{__version__}", None, enabled=False),
-            pystray.MenuItem("Open status page", lambda: self.ui.open(), default=True),
+            pystray.MenuItem(f"Open {APP_NAME}", lambda: self.ui.open(), default=True),
             pystray.MenuItem(lambda item: "Resume printing" if self.config.get("paused") else "Pause printing",
                              lambda: (self.config.set(paused=not self.config.get("paused")), self.worker.wake())),
             pystray.MenuItem("Print local test page", self._test),
@@ -107,13 +144,22 @@ class Tray:
                 log.exception("tray refresh")
             time.sleep(2)
 
-    def run(self):
-        """Blocks on the tray loop (must be the main thread on Windows)."""
+    def _build(self):
         import pystray
         self._state = self._state_now()
         self.icon = pystray.Icon("RapidPrintAgent", _variant(self._state), APP_NAME, self._menu())
         threading.Thread(target=self._refresh_loop, name="tray-refresh", daemon=True).start()
+        threading.Thread(target=promote_tray_icon, name="tray-promote", daemon=True).start()
+
+    def run(self):
+        """Blocks on the tray loop (main thread, when there is no own window)."""
+        self._build()
         self.icon.run()
+
+    def run_detached(self):
+        """Tray loop on its own thread; the main thread belongs to the window."""
+        self._build()
+        self.icon.run_detached()
 
     def stop(self):
         if self.icon:

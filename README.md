@@ -20,7 +20,8 @@ same six endpoints works (Rapid Labels and the Portal can reuse it).
    booking an order prints the label here.
 
 The icon in the tray: blue = connected · grey = paused · red dot = cannot reach
-the server · orange dot = not paired. Right-click for status page, pause, local
+the server · orange dot = not paired. Click opens the agent's own window
+(WebView2; browser fallback); right-click for pause, local
 test page, log folder, quit.
 
 ## For the developer
@@ -33,7 +34,8 @@ pytest
 powershell -ExecutionPolicy Bypass -File build\build.ps1   # dist\RapidPrintAgent.exe
 ```
 
-Flags: `--console` (log to stderr), `--no-tray` (worker + UI only), `--uninstall`.
+Flags: `--console` (log to stderr), `--minimized` (start hidden; the autostart uses it),
+`--open` (start with the window shown), `--no-tray` (worker + UI only), `--uninstall`.
 Env `RPA_NO_INSTALL=1` keeps a frozen exe from copying itself.
 
 ### How it prints
@@ -50,7 +52,9 @@ Env `RPA_NO_INSTALL=1` keeps a frozen exe from copying itself.
 - Never prints twice: last 500 job ids kept in `printed.json`; a repeated job is acked, not printed.
 - Always answers: download or print failure is acked `failed` with the reason, visible in Settings › Printers.
 - 401 from the server (computer removed) forgets the token and shows the pairing screen.
-- Single instance (named mutex); a second launch opens the status page.
+- Single instance (named mutex); a second launch brings the running agent's window up.
+- Own window: pywebview on WebView2 (ships with Windows 10/11). Closing it hides it.
+- Windows 11 tray: the icon is promoted out of the ^ overflow automatically (IsPromoted).
 - Not a Windows service: needs a logged-in user, like every tray app.
 
 ### Protocol (header `X-Agent-Token`)

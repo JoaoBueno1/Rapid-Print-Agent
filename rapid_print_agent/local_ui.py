@@ -121,7 +121,7 @@ td{padding:6px 8px;border-bottom:1px solid var(--border)}tr:last-child td{border
     <p id="noRecent" class="muted" style="margin-top:8px">Nothing printed yet.</p>
   </div>
 </div>
-<p class="foot">Rapid Print Agent runs in the system tray. Closing this page does not stop it.</p>
+<p class="foot">Rapid Print Agent keeps running in the system tray. Closing this window only hides it; the tray icon brings it back.</p>
 </div>
 <script>
 const $=s=>document.querySelector(s);const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -162,6 +162,7 @@ class LocalUI:
         self.config = config
         self.worker = worker
         self.on_quit = on_quit
+        self.window = None  # AppWindow when the own window is in use
         self.server: ThreadingHTTPServer | None = None
         self.port = LOCAL_UI_PORT
 
@@ -240,6 +241,10 @@ class LocalUI:
                         import os
                         os.startfile(str(log_dir()))  # noqa: S606
                         return self._send(200, {"ok": True})
+                    if self.path == "/api/show":
+                        # A second launch of the exe lands here: bring the window up.
+                        threading.Thread(target=ui.open, daemon=True).start()
+                        return self._send(200, {"ok": True})
                     if self.path == "/api/quit":
                         if ui.on_quit:
                             threading.Timer(0.3, ui.on_quit).start()
@@ -268,6 +273,13 @@ class LocalUI:
             self.server.shutdown()
 
     def open(self):
+        """Show the agent: its own window when available, else the browser."""
+        if self.window is not None:
+            try:
+                if self.window.show():
+                    return
+            except Exception:  # noqa: BLE001
+                log.exception("window show failed; falling back to the browser")
         try:
             webbrowser.open(self.url)
         except Exception:  # noqa: BLE001

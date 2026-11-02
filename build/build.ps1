@@ -19,6 +19,7 @@ VSVersionInfo(
       StringStruct('FileDescription', 'Rapid Print Agent'),
       StringStruct('FileVersion', '$version'),
       StringStruct('InternalName', 'RapidPrintAgent'),
+      StringStruct('LegalCopyright', 'Rapid Express'),
       StringStruct('OriginalFilename', 'RapidPrintAgent.exe'),
       StringStruct('ProductName', 'Rapid Print Agent'),
       StringStruct('ProductVersion', '$version')])]),
